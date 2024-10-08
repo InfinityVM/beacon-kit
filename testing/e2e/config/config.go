@@ -187,12 +187,12 @@ func defaultValidators() NodeSet {
 			},
 			{
 				ElType:   "geth",
-				Replicas: 1, //nolint:mnd // bet.
+				Replicas: 1,
 				KZGImpl:  "crate-crypto/go-kzg-4844",
 			},
 			{
 				ElType:   "reth",
-				Replicas: 4,
+				Replicas: 4, //nolint:mnd // bet.
 				KZGImpl:  "crate-crypto/go-kzg-4844",
 			},
 			{
@@ -220,7 +220,7 @@ func defaultFullNodes() NodeSet {
 			},
 			{
 				ElType:   "reth",
-				Replicas: 2,
+				Replicas: 2, //nolint:mnd // bet.
 				KZGImpl:  "crate-crypto/go-kzg-4844",
 			},
 			{
