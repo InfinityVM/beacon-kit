@@ -16,7 +16,7 @@ IMAGE_NAME = "makemake1337/blutgang:latest"
 # The min/max CPU/memory that blutgang can use
 MIN_CPU = 0
 MAX_CPU = 8000
-MIN_MEMORY = 1024
+MIN_MEMORY = 0
 MAX_MEMORY = 8096
 
 USED_PORTS = {

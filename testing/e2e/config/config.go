@@ -267,7 +267,7 @@ func defaultExecutionSettings() ExecutionSettings {
 		Specs: NodeSpecs{
 			MinCPU:    0,
 			MaxCPU:    0,
-			MinMemory: 1024, //nolint:mnd // 1 GB
+			MinMemory: 0,
 			MaxMemory: 2048, //nolint:mnd // 2 GB
 		},
 		Images: map[string]string{
