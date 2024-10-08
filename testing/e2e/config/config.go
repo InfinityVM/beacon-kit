@@ -313,9 +313,8 @@ func defaultEthJSONRPCEndpoints() []EthJSONRPCEndpoint {
 			Type: "blutgang",
 			Clients: []string{
 				// "el-full-nethermind-0",
-				// "el-full-reth-0",
-				"el-full-geth-2",
-				// "el-full-erigon-3",
+				"el-full-reth-0",
+				// "el-full-geth-2",
 				// "el-full-erigon-3",
 				// Besu causing flakey tests.
 				// "el-full-besu-4",
