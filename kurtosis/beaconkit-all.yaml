@@ -35,10 +35,10 @@ network_configuration:
         replicas: 0
       - el_type: reth
         kzg_impl: crate-crypto/go-kzg-4844
-        replicas: 4
+        replicas: 3
       - el_type: geth
         kzg_impl: crate-crypto/go-kzg-4844
-        replicas: 1
+        replicas: 0
       - el_type: erigon
         kzg_impl: crate-crypto/go-kzg-4844
         replicas: 0
@@ -82,6 +82,8 @@ node_settings:
       timeout_commit: 2s
       max_num_inbound_peers: 40
       max_num_outbound_peers: 10
+      create_empty_blocks: true
+      create_empty_blocks_interval: 0ms
     app:
       payload_timeout: 2.5s
       enable_optimistic_payload_builds: true

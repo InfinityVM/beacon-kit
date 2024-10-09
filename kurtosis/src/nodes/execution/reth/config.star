@@ -71,7 +71,7 @@ CMD = [
     "--nat",
     "extip:" + KURTOSIS_IP_ADDRESS_PLACEHOLDER,
     "--builder.deadline",
-    "2",
+    "1",
     "--builder.max-tasks",
     "20",
     "--txpool.pending-max-count",
