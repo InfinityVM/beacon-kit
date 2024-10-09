@@ -72,6 +72,8 @@ CMD = [
     "extip:" + KURTOSIS_IP_ADDRESS_PLACEHOLDER,
     "--builder.deadline",
     "1",
+    "--builder.interval",
+    "50ms",
     "--builder.max-tasks",
     "20",
     "--txpool.pending-max-count",
@@ -92,6 +94,7 @@ CMD = [
     "1000",
     "--rpc-cache.max-receipts",
     "10000",
+    "-vvvv",
 ]
 BOOTNODE_CMD = "--bootnodes"
 MAX_PEERS_OUTBOUND_CMD = "--max-outbound-peers"
