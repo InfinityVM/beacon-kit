@@ -83,7 +83,7 @@ node_settings:
       max_num_inbound_peers: 40
       max_num_outbound_peers: 10
     app:
-      payload_timeout: 300ms
+      payload_timeout: 300ms # This in theory is how long beaconkit waits until it requests the built payload. This should in theory be tuned to however fast reth can go.
       enable_optimistic_payload_builds: true
   execution_settings:
     specs:
