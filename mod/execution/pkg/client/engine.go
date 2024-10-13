@@ -159,6 +159,11 @@ func (s *EngineClient[
 
 	// Call and check for errors.
 	result, err := s.Client.GetPayload(cctx, payloadID, forkVersion)
+	s.logger.Info(
+		"EL GetPayload RPC",
+		"duration", time.Since(startTime).String(),
+		"error", err,
+	)
 	switch {
 	case err != nil:
 		if errors.Is(err, engineerrors.ErrEngineAPITimeout) {
