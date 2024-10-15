@@ -71,6 +71,7 @@ def run(plan, network_configuration = {}, node_settings = {}, eth_json_rpc_endpo
 
     if seed_node_el_client_configs != []:
         seed_node_el_clients = execution.deploy_nodes(plan, seed_node_el_client_configs)
+        plan.print(seed_node_el_clients)
 
     for n, seed in enumerate(seed_nodes):
         enode_addr = execution.get_enode_addr(plan, seed.el_service_name)
@@ -186,6 +187,7 @@ def run(plan, network_configuration = {}, node_settings = {}, eth_json_rpc_endpo
         plan.print("Invalid type for eth_json_rpc_endpoint")
 
     # 7. Start additional services
+    # prometheus_url = prometheus.start(plan, metrics_enabled_services)
     prometheus_url = ""
     for s_dict in additional_services:
         s = service_module.parse_service_from_dict(s_dict)
@@ -211,8 +213,11 @@ def run(plan, network_configuration = {}, node_settings = {}, eth_json_rpc_endpo
 
         elif s.name == "prometheus":
             prometheus_url = prometheus.start(plan, metrics_enabled_services)
+            plan.print("prometheus launched")
+            plan.print(prometheus_url)
         elif s.name == "grafana":
             grafana.start(plan, prometheus_url)
+            plan.print("grafana launched")
         elif s.name == "pyroscope":
             pyroscope.run(plan)
         elif s.name == "blockscout":

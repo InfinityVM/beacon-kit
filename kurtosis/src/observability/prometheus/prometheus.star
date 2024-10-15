@@ -34,7 +34,7 @@ def start(plan, services):
         scrape_interval = prometheus.DEFAULT_SCRAPE_INTERVAL  # use 5s as default scrape interval
         if "scrape_interval" in service:
             scrape_interval = service["scrape_interval"]
-
+        plan.print(service)
         metrics_job = {
             "Name": "{0}".format(service["name"]),
             "Endpoint": "{0}:{1}".format(service["service"].ip_address, service["service"].ports["metrics"].number),
