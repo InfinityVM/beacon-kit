@@ -112,9 +112,9 @@ eth_json_rpc_endpoints:
 additional_services:
   # - name: "goomy-blob"
   - name: "tx-fuzz"
-    replicas: 8
-  # - name: "prometheus"
-  # - name: "grafana"
+    replicas: 4
+  - name: "prometheus"
+  - name: "grafana"
   # - name: "pyroscope"
   # - name: "blockscout"
     # client: "el-full-reth-0"
