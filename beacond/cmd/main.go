@@ -21,21 +21,32 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"log/slog"
 	"os"
 
 	clibuilder "github.com/berachain/beacon-kit/mod/cli/pkg/builder"
 	clicomponents "github.com/berachain/beacon-kit/mod/cli/pkg/components"
+	spec "github.com/berachain/beacon-kit/mod/config/pkg/spec"
 	nodebuilder "github.com/berachain/beacon-kit/mod/node-core/pkg/builder"
 	nodecomponents "github.com/berachain/beacon-kit/mod/node-core/pkg/components"
 	nodetypes "github.com/berachain/beacon-kit/mod/node-core/pkg/types"
+	common "github.com/berachain/beacon-kit/mod/primitives/pkg/common"
 	"go.uber.org/automaxprocs/maxprocs"
 )
 
 type Node = nodetypes.Node
 
+// ProvideChainSpecWithInput provides the chain spec based on the input.
+func ProvideChainSpecWithInput(chainSpec *spec.ChainSpecInput) func() common.ChainSpec {
+	return func() common.ChainSpec {
+		return nodecomponents.ProvideChainSpec(chainSpec)
+	}
+}
+
 // run runs the beacon node.
-func run() error {
+func run(chainSpec *spec.ChainSpecInput) error {
 	// Set the uber max procs
 	if _, err := maxprocs.Set(); err != nil {
 		return err
@@ -65,7 +76,7 @@ func run() error {
 				clicomponents.DefaultClientComponents(),
 				// TODO: remove these, and eventually pull cfg and chainspec
 				// from built node
-				nodecomponents.ProvideChainSpec,
+				ProvideChainSpecWithInput(chainSpec),
 			),
 		),
 		// Set the NodeBuilderFunc to the NodeBuilder Build.
@@ -88,7 +99,33 @@ func run() error {
 
 // main is the entry point.
 func main() {
-	if err := run(); err != nil {
+	// Define the chain-spec flag
+	chainSpecPath := flag.String("chain-spec", "", "Path to the chain specification JSON file")
+	flag.Parse()
+	specType := os.Getenv("CHAIN_SPEC")
+	if *chainSpecPath == "" && specType == "" {
+		slog.Error("Path to chain-spec must be specified or set env var CHAIN_SPEC")
+		os.Exit(1)
+	}
+
+	var chainspec *spec.ChainSpecInput
+
+	if *chainSpecPath != "" {
+		b, err := os.ReadFile(*chainSpecPath)
+		if err != nil {
+			slog.Error("Failed to open chain specification file", "path", *chainSpecPath, "err", err)
+			os.Exit(1)
+		}
+
+		chainspec := new(spec.ChainSpecInput)
+		err = json.Unmarshal(b, chainspec)
+		if err != nil {
+			slog.Error("Failed to unmarshal chain specification", "path", *chainSpecPath, "err", err)
+			os.Exit(1)
+		}
+	}
+
+	if err := run(chainspec); err != nil {
 		//nolint:sloglint // todo fix.
 		slog.Error("startup failure", "error", err)
 		os.Exit(1)
