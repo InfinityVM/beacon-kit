@@ -23,9 +23,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"log/slog"
-	"os"
-
 	clibuilder "github.com/berachain/beacon-kit/mod/cli/pkg/builder"
 	clicomponents "github.com/berachain/beacon-kit/mod/cli/pkg/components"
 	spec "github.com/berachain/beacon-kit/mod/config/pkg/spec"
@@ -34,6 +31,8 @@ import (
 	nodetypes "github.com/berachain/beacon-kit/mod/node-core/pkg/types"
 	common "github.com/berachain/beacon-kit/mod/primitives/pkg/common"
 	"go.uber.org/automaxprocs/maxprocs"
+	"log/slog"
+	"os"
 )
 
 type Node = nodetypes.Node
@@ -108,8 +107,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	var chainspec *spec.ChainSpecInput
-
+	var chainSpecInput *spec.ChainSpecInput
 	if *chainSpecPath != "" {
 		b, err := os.ReadFile(*chainSpecPath)
 		if err != nil {
@@ -117,15 +115,15 @@ func main() {
 			os.Exit(1)
 		}
 
-		chainspec := new(spec.ChainSpecInput)
-		err = json.Unmarshal(b, chainspec)
+		chainSpecInput := new(spec.ChainSpecInput)
+		err = json.Unmarshal(b, chainSpecInput)
 		if err != nil {
 			slog.Error("Failed to unmarshal chain specification", "path", *chainSpecPath, "err", err)
 			os.Exit(1)
 		}
 	}
 
-	if err := run(chainspec); err != nil {
+	if err := run(chainSpecInput); err != nil {
 		//nolint:sloglint // todo fix.
 		slog.Error("startup failure", "error", err)
 		os.Exit(1)
