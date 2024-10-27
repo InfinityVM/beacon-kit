@@ -22,7 +22,7 @@ package commands
 
 import (
 	svrcmd "github.com/berachain/beacon-kit/mod/cli/pkg/commands/server/cmd"
-	config "github.com/berachain/beacon-kit/mod/cli/pkg/config"
+	"github.com/berachain/beacon-kit/mod/cli/pkg/config"
 	sdkclient "github.com/cosmos/cosmos-sdk/client"
 	sdkconfig "github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/spf13/cobra"
