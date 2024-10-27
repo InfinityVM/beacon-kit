@@ -45,37 +45,38 @@ func ProvideChainSpec() common.ChainSpec {
 	}
 
 	var chainSpec common.ChainSpec
-	specPath, found := strings.CutPrefix("file://", specType)
-	if !found {
-		switch specType {
-		case DevnetChainSpecType:
-			chainSpec = spec.DevnetChainSpec()
-		case BetnetChainSpecType:
-			chainSpec = spec.BetnetChainSpec()
-		default:
-			chainSpec = spec.TestnetChainSpec()
+	if strings.HasPrefix(specType, "file://") {
+		specPath := strings.TrimPrefix(specType, "file://")
+		if specPath == "" {
+			panic(fmt.Sprintf("file path not set: %s", specPath))
 		}
+
+		b, err := os.ReadFile(specPath)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to open chain specification file: %w", err))
+		}
+
+		chainSpecInput := new(spec.ChainSpecInput)
+		err = json.Unmarshal(b, &chainSpecInput)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to unmarshal chain specification: %w", err))
+		}
+
+		sd := spec.BaseSpec()
+		sd.DepositEth1ChainID = chainSpecInput.Eth1ChainID
+		chainSpec = chain.NewChainSpec(sd)
+
 		return chainSpec
 	}
 
-	if specPath == "" {
-		panic(fmt.Sprintf("file path not set: %s", specPath))
+	switch specType {
+	case DevnetChainSpecType:
+		chainSpec = spec.DevnetChainSpec()
+	case BetnetChainSpecType:
+		chainSpec = spec.BetnetChainSpec()
+	default:
+		chainSpec = spec.TestnetChainSpec()
 	}
-
-	b, err := os.ReadFile(specPath)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to open chain specification file: %w", err))
-	}
-
-	chainSpecInput := new(spec.ChainSpecInput)
-	err = json.Unmarshal(b, &chainSpecInput)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to unmarshal chain specification: %w", err))
-	}
-
-	sd := spec.BaseSpec()
-	sd.DepositEth1ChainID = chainSpecInput.Eth1ChainID
-	chainSpec = chain.NewChainSpec(sd)
-
 	return chainSpec
+
 }
