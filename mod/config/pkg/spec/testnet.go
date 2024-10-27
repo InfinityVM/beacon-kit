@@ -28,10 +28,6 @@ import (
 	cmttypes "github.com/cometbft/cometbft/types"
 )
 
-type ChainSpecInput struct {
-	Eth1ChainID uint64 `json:"eth1chain_id"`
-}
-
 // TestnetChainSpec is the ChainSpec for the localnet.
 func TestnetChainSpec() chain.Spec[
 	common.DomainType,
