@@ -67,13 +67,14 @@ func ProvideChainSpec() common.ChainSpec {
 		panic(fmt.Sprintf("Failed to open chain specification file: %w", err))
 	}
 
-	err = json.Unmarshal(b, &chainSpec)
+	chainSpecInput := new(spec.ChainSpecInput)
+	err = json.Unmarshal(b, &chainSpecInput)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to unmarshal chain specification: %w", err))
 	}
 
 	sd := spec.BaseSpec()
-	sd.DepositEth1ChainID = chainSpec.DepositEth1ChainID()
+	sd.DepositEth1ChainID = chainSpecInput.Eth1ChainID
 	chainSpec = chain.NewChainSpec(sd)
 
 	return chainSpec
