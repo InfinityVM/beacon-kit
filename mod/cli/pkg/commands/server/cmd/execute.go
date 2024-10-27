@@ -47,7 +47,6 @@ func Execute(rootCmd *cobra.Command, envPrefix, defaultHome string) error {
 	ctx := CreateExecuteContext(context.Background())
 	rootCmd.PersistentFlags().
 		StringP(flags.FlagHome, "", defaultHome, "directory for config and data")
-
 	// update the global viper with the root command's configuration
 	viper.SetEnvPrefix(envPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))

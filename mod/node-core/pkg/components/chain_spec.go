@@ -21,11 +21,13 @@
 package components
 
 import (
-	"os"
-
+	"encoding/json"
+	"fmt"
 	"github.com/berachain/beacon-kit/mod/chain-spec/pkg/chain"
 	"github.com/berachain/beacon-kit/mod/config/pkg/spec"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/common"
+	"os"
+	"strings"
 )
 
 const (
@@ -35,15 +37,16 @@ const (
 )
 
 // ProvideChainSpec provides the chain spec based on the environment variable.
-func ProvideChainSpec(in *spec.ChainSpecInput) common.ChainSpec {
+func ProvideChainSpec() common.ChainSpec {
 	// TODO: This is still pretty hood but we shouldn't deviate to far from upstream
 	specType := os.Getenv(ChainSpecTypeEnvVar)
+	if specType == "" {
+		panic(fmt.Sprintf("environment variable %s not set", ChainSpecTypeEnvVar))
+	}
+
 	var chainSpec common.ChainSpec
-	if in != nil {
-		sd := spec.BaseSpec()
-		sd.DepositEth1ChainID = in.Eth1ChainID
-		chainSpec = chain.NewChainSpec(sd)
-	} else {
+	specPath, found := strings.CutPrefix("file://", specType)
+	if !found {
 		switch specType {
 		case DevnetChainSpecType:
 			chainSpec = spec.DevnetChainSpec()
@@ -52,7 +55,26 @@ func ProvideChainSpec(in *spec.ChainSpecInput) common.ChainSpec {
 		default:
 			chainSpec = spec.TestnetChainSpec()
 		}
+		return chainSpec
 	}
+
+	if specPath == "" {
+		panic(fmt.Sprintf("file path not set: %s", specPath))
+	}
+
+	b, err := os.ReadFile(specPath)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to open chain specification file: %w", err))
+	}
+
+	err = json.Unmarshal(b, &chainSpec)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to unmarshal chain specification: %w", err))
+	}
+
+	sd := spec.BaseSpec()
+	sd.DepositEth1ChainID = chainSpec.DepositEth1ChainID()
+	chainSpec = chain.NewChainSpec(sd)
 
 	return chainSpec
 }
