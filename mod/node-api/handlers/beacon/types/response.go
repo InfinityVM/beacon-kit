@@ -83,3 +83,16 @@ type BlockRewardsData struct {
 	ProposerSlashings uint64 `json:"proposer_slashings,string"`
 	AttesterSlashings uint64 `json:"attester_slashings,string"`
 }
+
+type BlobSidecarsData[BlockHeaderT any] struct {
+	Index         uint64 `json:"index,string"`
+	Blob          string `json:"blob"`           // hex string of length 262144
+	KZGCommitment string `json:"kzg_commitment"` // hex string of length 96
+	KZGProof      string `json:"kzg_proof"`      // hex string of length 96
+	// SignedBlockHeader           *BlockHeader[BlockHeaderT] `json:"signed_block_header"`
+	KZGCommitmentInclusionProof []string `json:"kzg_commitment_inclusion_proof"` // array of 17 strings
+}
+
+type BlobSidecarsResponse[BlockHeaderT any] struct {
+	Data []*BlobSidecarsData[BlockHeaderT] `json:"data"`
+}
