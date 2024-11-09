@@ -24,29 +24,28 @@ import (
 	"strings"
 
 	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
+	"github.com/berachain/beacon-kit/mod/node-api/handlers/utils"
 )
 
 func (h *Handler[
 	BeaconBlockHeaderT, ContextT, _, _,
 ]) GetBlobSidecars(c ContextT) (any, error) {
-	// req, err := utils.BindAndValidate[beacontypes.GetBlobSidecarsRequest](
-	// 	c, h.Logger(),
-	// )
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// fmt.Println("NARULA block ID", req.BlockID)
+	req, err := utils.BindAndValidate[beacontypes.GetBlobSidecarsRequest](
+		c, h.Logger(),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	// Return a sample blob sidecar
 	return beacontypes.BlobSidecarsResponse[BeaconBlockHeaderT]{
 		Data: []*beacontypes.BlobSidecarsData[BeaconBlockHeaderT]{
 			{
 				Index:                       0,
-				Blob:                        "0x" + strings.Repeat("00", 131072), // 262144 hex chars
-				KZGCommitment:               "0x" + strings.Repeat("00", 48),     // 96 hex chars
-				KZGProof:                    "0x" + strings.Repeat("00", 48),     // 96 hex chars
-				KZGCommitmentInclusionProof: make([]string, 17),                  // Array of 17 empty strings
+				Blob:                        "0x" + strings.Repeat("00", 2),
+				KZGCommitment:               "0x" + strings.Repeat("00", 2),
+				KZGProof:                    "0x" + strings.Repeat("00", 2),
+				KZGCommitmentInclusionProof: make([]string, 17), // Array of 17 empty strings
 				// SignedBlockHeader: &beacontypes.BlockHeader[BeaconBlockHeaderT]{
 				// 	Message:   bytes.B48{},
 				// 	Signature: bytes.B48{}, // TODO: implement

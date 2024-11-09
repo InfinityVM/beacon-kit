@@ -140,7 +140,7 @@ func (h *Handler[_, ContextT, _, _]) RegisterRoutes(
 		},
 		{
 			Method:  http.MethodGet,
-			Path:    "eth/v1/beacon/blob_sidecars/:block_id",
+			Path:    "/eth/v1/beacon/blob_sidecars/:block_id",
 			Handler: h.GetBlobSidecars,
 		},
 		{
