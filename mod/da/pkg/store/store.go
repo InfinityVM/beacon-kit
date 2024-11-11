@@ -24,11 +24,9 @@ import (
 	"context"
 
 	"github.com/berachain/beacon-kit/mod/da/pkg/types"
-	"github.com/berachain/beacon-kit/mod/errors"
 	"github.com/berachain/beacon-kit/mod/log"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/common"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
-	"github.com/sourcegraph/conc/iter"
 )
 
 // Store is the default implementation of the AvailabilityStore.
@@ -94,21 +92,44 @@ func (s *Store[BeaconBlockT]) Persist(
 		return nil
 	}
 
-	// Store each sidecar in parallel.
-	if err := errors.Join(iter.Map(
-		sidecars.Sidecars,
-		func(sidecar **types.BlobSidecar) error {
-			if *sidecar == nil {
-				return ErrAttemptedToStoreNilSidecar
-			}
-			sc := *sidecar
-			bz, err := sc.MarshalSSZ()
-			if err != nil {
-				return err
-			}
-			return s.Set(slot.Unwrap(), sc.KzgCommitment[:], bz)
-		},
-	)...); err != nil {
+	// Create a list of commitments for this slot
+	commitments := make([][]byte, len(sidecars.Sidecars))
+
+	// Store each sidecar sequentially and collect commitments
+	for i, sidecar := range sidecars.Sidecars {
+		if sidecar == nil {
+			return ErrAttemptedToStoreNilSidecar
+		}
+
+		bz, err := sidecar.MarshalSSZ()
+		if err != nil {
+			return err
+		}
+
+		// Store the sidecar
+		if err := s.Set(slot.Unwrap(), sidecar.KzgCommitment[:], bz); err != nil {
+			return err
+		}
+
+		// Store the commitment for the slot index
+		commitments[i] = sidecar.KzgCommitment[:]
+	}
+
+	// Simple serialization: first byte is number of commitments, followed by concatenated commitments
+	totalSize := 0
+	for _, commitment := range commitments {
+		totalSize += len(commitment)
+	}
+
+	serialized := make([]byte, 0, totalSize+1)
+	serialized = append(serialized, byte(len(commitments))) // number of commitments
+	for _, commitment := range commitments {
+		serialized = append(serialized, commitment...)
+	}
+
+	// Store the commitments. We use `slot_commitments` as the key to avoid
+	// conflicts with the slot index.
+	if err := s.IndexDB.Set(slot.Unwrap(), []byte("slot_commitments"), serialized); err != nil {
 		return err
 	}
 
@@ -116,4 +137,49 @@ func (s *Store[BeaconBlockT]) Persist(
 		"slot", slot.Base10(), "num_sidecars", sidecars.Len(),
 	)
 	return nil
+}
+
+// GetBlobSidecars returns all blob sidecars for a given slot.
+func (s *Store[BeaconBlockT]) GetBlobSidecars(
+	_ context.Context,
+	slot math.Slot,
+) (*types.BlobSidecars, error) {
+	// Get the commitment list for this slot
+	serialized, err := s.IndexDB.Get(slot.Unwrap(), []byte("slot_commitments"))
+	if err != nil {
+		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
+	}
+
+	// Deserialize: first byte is count, each commitment is fixed size
+	numCommitments := int(serialized[0])
+	commitmentSize := (len(serialized) - 1) / numCommitments
+	commitments := make([][]byte, numCommitments)
+
+	for i := 0; i < numCommitments; i++ {
+		start := 1 + (i * commitmentSize)
+		end := start + commitmentSize
+		commitments[i] = serialized[start:end]
+	}
+
+	// Create slice to hold all sidecars
+	sidecars := make([]*types.BlobSidecar, len(commitments))
+
+	// Retrieve and unmarshal each sidecar sequentially
+	for i, commitment := range commitments {
+		// Get the sidecar bytes from the db
+		bz, err := s.Get(slot.Unwrap(), commitment)
+		if err != nil {
+			return nil, err
+		}
+
+		// Unmarshal the sidecar
+		sidecar := new(types.BlobSidecar)
+		if err := sidecar.UnmarshalSSZ(bz); err != nil {
+			return nil, err
+		}
+
+		sidecars[i] = sidecar
+	}
+
+	return &types.BlobSidecars{Sidecars: sidecars}, nil
 }

@@ -37,6 +37,11 @@ func (h *Handler[
 		return nil, err
 	}
 
+	_, err = utils.SlotFromBlockID(req.BlockID, h.backend)
+	if err != nil {
+		return nil, err
+	}
+
 	// Return a sample blob sidecar
 	return beacontypes.BlobSidecarsResponse[BeaconBlockHeaderT]{
 		Data: []*beacontypes.BlobSidecarsData[BeaconBlockHeaderT]{

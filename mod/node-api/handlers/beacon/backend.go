@@ -53,6 +53,10 @@ type RandaoBackend interface {
 	RandaoAtEpoch(slot math.Slot, epoch math.Epoch) (common.Bytes32, error)
 }
 
+// type BlobBackend interface {
+// 	BlobSidecarsAtSlot(slot math.Slot)
+// }
+
 type BlockBackend[BeaconBlockHeaderT any] interface {
 	BlockRootAtSlot(slot math.Slot) (common.Root, error)
 	BlockRewardsAtSlot(slot math.Slot) (*types.BlockRewardsData, error)

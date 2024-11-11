@@ -18,34 +18,20 @@
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND
 // TITLE.
 
-package store
+package backend
 
-import (
-	"github.com/berachain/beacon-kit/mod/primitives/pkg/common"
-	"github.com/berachain/beacon-kit/mod/primitives/pkg/eip4844"
-	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
-)
+// // BlobSidecarsAtSlot returns the blob sidecars at the given slot.
+// func (b Backend[
+// 	_, _, _, BeaconBlockHeaderT, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
+// 	_,
+// ]) BlobSidecarsAtSlot(slot math.Slot) (BeaconBlockHeaderT, error) {
+// 	var blockHeader BeaconBlockHeaderT
 
-// BeaconBlock is an interface for beacon blocks.
-type BeaconBlock interface {
-	GetSlot() math.U64
-}
+// 	st, _, err := b.stateFromSlot(slot)
+// 	if err != nil {
+// 		return blockHeader, err
+// 	}
 
-// BlockEvent is an interface for block events.
-type BlockEvent[BeaconBlockT BeaconBlock] interface {
-	Data() BeaconBlockT
-}
-
-// IndexDB is a database that allows prefixing by index.
-type IndexDB interface {
-	Has(index uint64, key []byte) (bool, error)
-	Set(index uint64, key []byte, value []byte) error
-	Get(index uint64, key []byte) ([]byte, error)
-	Prune(start uint64, end uint64) error
-}
-
-// BeaconBlockBody is the body of a beacon block.
-type BeaconBlockBody interface {
-	// GetBlobKzgCommitments returns the KZG commitments for the blob.
-	GetBlobKzgCommitments() eip4844.KZGCommitments[common.ExecutionHash]
-}
+// 	blockHeader, err = st.GetLatestBlockHeader()
+// 	return blockHeader, err
+// }
