@@ -22,6 +22,7 @@ package backend
 
 import (
 	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
+	"github.com/berachain/beacon-kit/mod/primitives/pkg/bytes"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
 )
 
@@ -56,8 +57,12 @@ func (b Backend[
 			inclusionProofStrings[j] = proof.String()
 		}
 		blobSidecarsResponse[i] = &beacontypes.BlobSidecarData[BeaconBlockHeaderT]{
-			Index:                       blobSidecar.GetIndex(),
-			Blob:                        string(blobHex),
+			Index: blobSidecar.GetIndex(),
+			Blob:  string(blobHex),
+			SignedBlockHeader: &beacontypes.BlockHeader[BeaconBlockHeaderT]{
+				Message:   blobSidecar.GetBeaconBlockHeader(),
+				Signature: bytes.B48{}, // TODO: implement
+			},
 			KZGCommitment:               string(kzgCommitmentHex),
 			KZGProof:                    string(kzgProofHex),
 			KZGCommitmentInclusionProof: inclusionProofStrings,
