@@ -86,11 +86,11 @@ type BlockRewardsData struct {
 
 type BlobSidecarData[BlockHeaderT any] struct {
 	Index                       uint64                     `json:"index,string"`
-	Blob                        string                     `json:"blob"`           // hex string of length 262144
-	KZGCommitment               string                     `json:"kzg_commitment"` // hex string of length 96
-	KZGProof                    string                     `json:"kzg_proof"`      // hex string of length 96
+	Blob                        string                     `json:"blob"`
+	KZGCommitment               string                     `json:"kzg_commitment"`
+	KZGProof                    string                     `json:"kzg_proof"`
 	SignedBlockHeader           *BlockHeader[BlockHeaderT] `json:"signed_block_header"`
-	KZGCommitmentInclusionProof []string                   `json:"kzg_commitment_inclusion_proof"` // array of 17 strings
+	KZGCommitmentInclusionProof []string                   `json:"kzg_commitment_inclusion_proof"`
 }
 
 type BlobSidecarsResponse[BlockHeaderT any] struct {
