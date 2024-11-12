@@ -115,21 +115,18 @@ func (s *Store[BeaconBlockT]) Persist(
 		commitments[i] = sidecar.KzgCommitment[:]
 	}
 
-	// Simple serialization: first byte is number of commitments, followed by concatenated commitments
-	totalSize := 0
+	// Serialization: first byte is number of commitments, followed by concatenated commitments.
+	// Each commitment is the same size.
+	totalSize := len(commitments) * len(commitments[0])
+	serializedCommitments := make([]byte, 0, totalSize+1)
+	serializedCommitments = append(serializedCommitments, byte(len(commitments))) // number of commitments
 	for _, commitment := range commitments {
-		totalSize += len(commitment)
-	}
-
-	serialized := make([]byte, 0, totalSize+1)
-	serialized = append(serialized, byte(len(commitments))) // number of commitments
-	for _, commitment := range commitments {
-		serialized = append(serialized, commitment...)
+		serializedCommitments = append(serializedCommitments, commitment...)
 	}
 
 	// Store the commitments. We use `slot_commitments` as the key to avoid
 	// conflicts with the slot index.
-	if err := s.IndexDB.Set(slot.Unwrap(), []byte("slot_commitments"), serialized); err != nil {
+	if err := s.IndexDB.Set(slot.Unwrap(), []byte("slot_commitments"), serializedCommitments); err != nil {
 		return err
 	}
 
@@ -144,20 +141,19 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 	slot math.Slot,
 ) (*types.BlobSidecars, error) {
 	// Get the commitment list for this slot
-	serialized, err := s.IndexDB.Get(slot.Unwrap(), []byte("slot_commitments"))
+	serializedCommitments, err := s.IndexDB.Get(slot.Unwrap(), []byte("slot_commitments"))
 	if err != nil {
 		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
 	}
 
-	// Deserialize: first byte is count, each commitment is fixed size
-	numCommitments := int(serialized[0])
-	commitmentSize := (len(serialized) - 1) / numCommitments
+	// Deserialize: first byte is count, each commitment is fixed size.
+	numCommitments := int(serializedCommitments[0])
+	commitmentSize := (len(serializedCommitments) - 1) / numCommitments
 	commitments := make([][]byte, numCommitments)
-
 	for i := 0; i < numCommitments; i++ {
 		start := 1 + (i * commitmentSize)
 		end := start + commitmentSize
-		commitments[i] = serialized[start:end]
+		commitments[i] = serializedCommitments[start:end]
 	}
 
 	// Create slice to hold all sidecars

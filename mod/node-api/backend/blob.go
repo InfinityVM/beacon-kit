@@ -34,7 +34,7 @@ func (b Backend[
 		return nil, err
 	}
 
-	// Now we can use the interface methods
+	// Construct data for beacon API response
 	blobSidecarsResponse := make([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], blobSidecars.Len())
 	for i := 0; i < blobSidecars.Len(); i++ {
 		blobSidecar := blobSidecars.Get(i)
@@ -50,16 +50,17 @@ func (b Backend[
 		if err != nil {
 			return nil, err
 		}
-		inclusionProofList := make([]string, len(blobSidecar.GetInclusionProof()))
-		for j, proof := range blobSidecar.GetInclusionProof() {
-			inclusionProofList[j] = proof.String()
+		inclusionProof := blobSidecar.GetInclusionProof()
+		inclusionProofStrings := make([]string, len(inclusionProof))
+		for j, proof := range inclusionProof {
+			inclusionProofStrings[j] = proof.String()
 		}
 		blobSidecarsResponse[i] = &beacontypes.BlobSidecarData[BeaconBlockHeaderT]{
 			Index:                       blobSidecar.GetIndex(),
 			Blob:                        string(blobHex),
 			KZGCommitment:               string(kzgCommitmentHex),
 			KZGProof:                    string(kzgProofHex),
-			KZGCommitmentInclusionProof: inclusionProofList,
+			KZGCommitmentInclusionProof: inclusionProofStrings,
 		}
 	}
 

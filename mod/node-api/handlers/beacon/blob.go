@@ -45,7 +45,6 @@ func (h *Handler[
 		return nil, err
 	}
 
-	// Return a sample blob sidecar
 	return beacontypes.BlobSidecarsResponse[BeaconBlockHeaderT]{
 		Data: blobSidecars,
 	}, nil

@@ -78,6 +78,7 @@ type (
 		// Persist makes sure that the sidecar remains accessible for data
 		// availability checks throughout the beacon node's operation.
 		Persist(math.Slot, BlobSidecarsT) error
+		// GetBlobsFromStore returns all blob sidecars for a given slot.
 		GetBlobsFromStore(math.Slot) (BlobSidecarsT, error)
 	}
 
@@ -233,6 +234,7 @@ type (
 		) error
 	}
 
+	// BlobSidecar is the interface for a single blob sidecar.
 	BlobSidecar[BeaconBlockHeaderT any] interface {
 		GetIndex() uint64
 		GetBeaconBlockHeader() BeaconBlockHeaderT

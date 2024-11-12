@@ -79,6 +79,7 @@ type BeaconState[
 	]
 }
 
+// BlobSidecar is the interface for a single blob sidecar.
 type BlobSidecar[BeaconBlockHeaderT any] interface {
 	GetIndex() uint64
 	GetBeaconBlockHeader() BeaconBlockHeaderT
