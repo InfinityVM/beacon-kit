@@ -78,6 +78,7 @@ type (
 		// Persist makes sure that the sidecar remains accessible for data
 		// availability checks throughout the beacon node's operation.
 		Persist(math.Slot, BlobSidecarsT) error
+		GetBlobSidecars(math.Slot) (BlobSidecarsT, error)
 	}
 
 	// BeaconBlock represents a generic interface for a beacon block.
@@ -233,10 +234,12 @@ type (
 	}
 
 	BlobSidecar[BeaconBlockHeaderT any] interface {
+		GetIndex() uint64
 		GetBeaconBlockHeader() BeaconBlockHeaderT
 		GetBlob() eip4844.Blob
 		GetKzgProof() eip4844.KZGProof
 		GetKzgCommitment() eip4844.KZGCommitment
+		GetInclusionProof() []common.Root
 	}
 
 	// BlobSidecars is the interface for blobs sidecars.
@@ -1107,6 +1110,7 @@ type (
 	] interface {
 		GenesisBackend
 		BlockBackend[BeaconBlockHeaderT]
+		BlobBackend[BeaconBlockHeaderT]
 		RandaoBackend
 		StateBackend[BeaconStateT, ForkT]
 		ValidatorBackend[ValidatorT]
@@ -1143,6 +1147,10 @@ type (
 		BlockRootAtSlot(slot math.Slot) (common.Root, error)
 		BlockRewardsAtSlot(slot math.Slot) (*types.BlockRewardsData, error)
 		BlockHeaderAtSlot(slot math.Slot) (BeaconBlockHeaderT, error)
+	}
+
+	BlobBackend[BeaconBlockHeaderT any] interface {
+		BlobSidecarsAtSlot(slot math.Slot) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
 	}
 
 	StateBackend[BeaconStateT, ForkT any] interface {

@@ -34,6 +34,7 @@ type Backend[BlockHeaderT, ForkT, ValidatorT any] interface {
 	StateBackend[ForkT]
 	ValidatorBackend[ValidatorT]
 	HistoricalBackend[ForkT]
+	BlobBackend[BlockHeaderT]
 	// GetSlotByBlockRoot retrieves the slot by a given root from the store.
 	GetSlotByBlockRoot(root common.Root) (math.Slot, error)
 	// GetSlotByStateRoot retrieves the slot by a given root from the store.
@@ -53,9 +54,9 @@ type RandaoBackend interface {
 	RandaoAtEpoch(slot math.Slot, epoch math.Epoch) (common.Bytes32, error)
 }
 
-// type BlobBackend interface {
-// 	BlobSidecarsAtSlot(slot math.Slot)
-// }
+type BlobBackend[BeaconBlockHeaderT any] interface {
+	BlobSidecarsAtSlot(slot math.Slot) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
+}
 
 type BlockBackend[BeaconBlockHeaderT any] interface {
 	BlockRootAtSlot(slot math.Slot) (common.Root, error)

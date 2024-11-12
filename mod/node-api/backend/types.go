@@ -25,6 +25,7 @@ import (
 
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/common"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/constraints"
+	"github.com/berachain/beacon-kit/mod/primitives/pkg/eip4844"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/transition"
 	"github.com/berachain/beacon-kit/mod/state-transition/pkg/core"
@@ -42,6 +43,8 @@ type AvailabilityStore[BeaconBlockBodyT, BlobSidecarsT any] interface {
 	// Persist makes sure that the sidecar remains accessible for data
 	// availability checks throughout the beacon node's operation.
 	Persist(math.Slot, BlobSidecarsT) error
+	// GetBlobSidecars returns all blob sidecars for a given slot.
+	GetBlobSidecars(math.Slot) (BlobSidecarsT, error)
 }
 
 // BeaconBlockHeader is the interface for a beacon block header.
@@ -74,6 +77,19 @@ type BeaconState[
 		BeaconBlockHeaderT, Eth1DataT, ExecutionPayloadHeaderT,
 		ForkT, ValidatorT, ValidatorsT, WithdrawalT,
 	]
+}
+
+type BlobSidecar interface {
+	GetIndex() uint64
+	GetBlob() eip4844.Blob
+	GetKzgProof() eip4844.KZGProof
+	GetKzgCommitment() eip4844.KZGCommitment
+	GetInclusionProof() []common.Root
+}
+
+type BlobSidecars[BlobSidecarT BlobSidecar] interface {
+	Len() int
+	Get(index int) BlobSidecarT
 }
 
 // BlockStore is the interface for block storage.

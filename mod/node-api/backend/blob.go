@@ -20,18 +20,48 @@
 
 package backend
 
-// // BlobSidecarsAtSlot returns the blob sidecars at the given slot.
-// func (b Backend[
-// 	_, _, _, BeaconBlockHeaderT, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-// 	_,
-// ]) BlobSidecarsAtSlot(slot math.Slot) (BeaconBlockHeaderT, error) {
-// 	var blockHeader BeaconBlockHeaderT
+import (
+	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
+	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
+)
 
-// 	st, _, err := b.stateFromSlot(slot)
-// 	if err != nil {
-// 		return blockHeader, err
-// 	}
+// BlobSidecarsAtSlot returns the blob sidecars at the given slot.
+func (b Backend[
+	_, _, _, BeaconBlockHeaderT, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
+]) BlobSidecarsAtSlot(slot math.Slot) ([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], error) {
+	blobSidecars, err := b.sb.AvailabilityStore().GetBlobSidecars(slot)
+	if err != nil {
+		return nil, err
+	}
 
-// 	blockHeader, err = st.GetLatestBlockHeader()
-// 	return blockHeader, err
-// }
+	// Now we can use the interface methods
+	blobSidecarsResponse := make([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], blobSidecars.Len())
+	for i := 0; i < blobSidecars.Len(); i++ {
+		blobSidecar := blobSidecars.Get(i)
+		blobHex, err := blobSidecar.GetBlob().MarshalText()
+		if err != nil {
+			return nil, err
+		}
+		kzgCommitmentHex, err := blobSidecar.GetKzgCommitment().MarshalText()
+		if err != nil {
+			return nil, err
+		}
+		kzgProofHex, err := blobSidecar.GetKzgProof().MarshalText()
+		if err != nil {
+			return nil, err
+		}
+		inclusionProofList := make([]string, len(blobSidecar.GetInclusionProof()))
+		for j, proof := range blobSidecar.GetInclusionProof() {
+			inclusionProofList[j] = proof.String()
+		}
+		blobSidecarsResponse[i] = &beacontypes.BlobSidecarData[BeaconBlockHeaderT]{
+			Index:                       blobSidecar.GetIndex(),
+			Blob:                        string(blobHex),
+			KZGCommitment:               string(kzgCommitmentHex),
+			KZGProof:                    string(kzgProofHex),
+			KZGCommitmentInclusionProof: inclusionProofList,
+		}
+	}
+
+	return blobSidecarsResponse, nil
+}

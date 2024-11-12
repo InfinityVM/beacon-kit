@@ -84,7 +84,7 @@ type BlockRewardsData struct {
 	AttesterSlashings uint64 `json:"attester_slashings,string"`
 }
 
-type BlobSidecarsData[BlockHeaderT any] struct {
+type BlobSidecarData[BlockHeaderT any] struct {
 	Index         uint64 `json:"index,string"`
 	Blob          string `json:"blob"`           // hex string of length 262144
 	KZGCommitment string `json:"kzg_commitment"` // hex string of length 96
@@ -94,5 +94,5 @@ type BlobSidecarsData[BlockHeaderT any] struct {
 }
 
 type BlobSidecarsResponse[BlockHeaderT any] struct {
-	Data []*BlobSidecarsData[BlockHeaderT] `json:"data"`
+	Data []*BlobSidecarData[BlockHeaderT] `json:"data"`
 }

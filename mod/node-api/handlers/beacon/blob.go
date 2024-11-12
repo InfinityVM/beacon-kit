@@ -21,8 +21,6 @@
 package beacon
 
 import (
-	"strings"
-
 	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
 	"github.com/berachain/beacon-kit/mod/node-api/handlers/utils"
 )
@@ -37,25 +35,18 @@ func (h *Handler[
 		return nil, err
 	}
 
-	_, err = utils.SlotFromBlockID(req.BlockID, h.backend)
+	slot, err := utils.SlotFromBlockID(req.BlockID, h.backend)
+	if err != nil {
+		return nil, err
+	}
+
+	blobSidecars, err := h.backend.BlobSidecarsAtSlot(slot)
 	if err != nil {
 		return nil, err
 	}
 
 	// Return a sample blob sidecar
 	return beacontypes.BlobSidecarsResponse[BeaconBlockHeaderT]{
-		Data: []*beacontypes.BlobSidecarsData[BeaconBlockHeaderT]{
-			{
-				Index:                       0,
-				Blob:                        "0x" + strings.Repeat("00", 2),
-				KZGCommitment:               "0x" + strings.Repeat("00", 2),
-				KZGProof:                    "0x" + strings.Repeat("00", 2),
-				KZGCommitmentInclusionProof: make([]string, 17), // Array of 17 empty strings
-				// SignedBlockHeader: &beacontypes.BlockHeader[BeaconBlockHeaderT]{
-				// 	Message:   bytes.B48{},
-				// 	Signature: bytes.B48{}, // TODO: implement
-				// }, // Empty block header
-			},
-		},
+		Data: blobSidecars,
 	}, nil
 }
