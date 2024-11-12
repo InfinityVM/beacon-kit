@@ -78,7 +78,7 @@ type (
 		// Persist makes sure that the sidecar remains accessible for data
 		// availability checks throughout the beacon node's operation.
 		Persist(math.Slot, BlobSidecarsT) error
-		GetBlobSidecars(math.Slot) (BlobSidecarsT, error)
+		GetBlobsFromStore(math.Slot) (BlobSidecarsT, error)
 	}
 
 	// BeaconBlock represents a generic interface for a beacon block.

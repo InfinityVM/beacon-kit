@@ -343,6 +343,7 @@ type (
 		*BeaconBlockHeader,
 		*BeaconState,
 		*BeaconStateMarshallable,
+		*BlobSidecar,
 		*BlobSidecars,
 		*BlockStore,
 		sdk.Context,

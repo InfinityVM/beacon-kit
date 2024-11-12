@@ -43,8 +43,8 @@ type AvailabilityStore[BeaconBlockBodyT, BlobSidecarsT any] interface {
 	// Persist makes sure that the sidecar remains accessible for data
 	// availability checks throughout the beacon node's operation.
 	Persist(math.Slot, BlobSidecarsT) error
-	// GetBlobSidecars returns all blob sidecars for a given slot.
-	GetBlobSidecars(math.Slot) (BlobSidecarsT, error)
+	// GetBlobsFromStore returns all blob sidecars for a given slot.
+	GetBlobsFromStore(math.Slot) (BlobSidecarsT, error)
 }
 
 // BeaconBlockHeader is the interface for a beacon block header.

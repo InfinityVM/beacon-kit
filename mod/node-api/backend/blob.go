@@ -29,7 +29,7 @@ import (
 func (b Backend[
 	_, _, _, BeaconBlockHeaderT, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
 ]) BlobSidecarsAtSlot(slot math.Slot) ([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], error) {
-	blobSidecars, err := b.sb.AvailabilityStore().GetBlobSidecars(slot)
+	blobSidecars, err := b.sb.AvailabilityStore().GetBlobsFromStore(slot)
 	if err != nil {
 		return nil, err
 	}

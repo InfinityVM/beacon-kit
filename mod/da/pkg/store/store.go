@@ -139,8 +139,8 @@ func (s *Store[BeaconBlockT]) Persist(
 	return nil
 }
 
-// GetBlobSidecars returns all blob sidecars for a given slot.
-func (s *Store[BeaconBlockT]) GetBlobSidecars(
+// GetBlobsFromStore returns all blob sidecars for a given slot.
+func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 	slot math.Slot,
 ) (*types.BlobSidecars, error) {
 	// Get the commitment list for this slot
