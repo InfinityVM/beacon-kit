@@ -70,7 +70,7 @@ type (
 	}
 
 	// AvailabilityStore is the interface for the availability store.
-	AvailabilityStore[BeaconBlockBodyT any, BlobSidecarsT any] interface {
+	AvailabilityStore[BeaconBlockBodyT, BlobSidecarsT any] interface {
 		IndexDB
 		// IsDataAvailable ensures that all blobs referenced in the block are
 		// securely stored before it returns without an error.
@@ -1109,8 +1109,8 @@ type (
 		BeaconStateT, BeaconBlockHeaderT, ForkT, ValidatorT any,
 	] interface {
 		GenesisBackend
-		BlockBackend[BeaconBlockHeaderT]
 		BlobBackend[BeaconBlockHeaderT]
+		BlockBackend[BeaconBlockHeaderT]
 		RandaoBackend
 		StateBackend[BeaconStateT, ForkT]
 		ValidatorBackend[ValidatorT]
@@ -1143,14 +1143,14 @@ type (
 		RandaoAtEpoch(slot math.Slot, epoch math.Epoch) (common.Bytes32, error)
 	}
 
+	BlobBackend[BeaconBlockHeaderT any] interface {
+		BlobSidecarsAtSlot(slot math.Slot) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
+	}
+
 	BlockBackend[BeaconBlockHeaderT any] interface {
 		BlockRootAtSlot(slot math.Slot) (common.Root, error)
 		BlockRewardsAtSlot(slot math.Slot) (*types.BlockRewardsData, error)
 		BlockHeaderAtSlot(slot math.Slot) (BeaconBlockHeaderT, error)
-	}
-
-	BlobBackend[BeaconBlockHeaderT any] interface {
-		BlobSidecarsAtSlot(slot math.Slot) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
 	}
 
 	StateBackend[BeaconStateT, ForkT any] interface {

@@ -79,17 +79,25 @@ type BeaconState[
 	]
 }
 
-type BlobSidecar interface {
+type BlobSidecar[BeaconBlockHeaderT any] interface {
 	GetIndex() uint64
+	GetBeaconBlockHeader() BeaconBlockHeaderT
 	GetBlob() eip4844.Blob
 	GetKzgProof() eip4844.KZGProof
 	GetKzgCommitment() eip4844.KZGCommitment
 	GetInclusionProof() []common.Root
 }
 
-type BlobSidecars[BlobSidecarT BlobSidecar] interface {
+// BlobSidecars is the interface for blobs sidecars.
+type BlobSidecars[T, BlobSidecarT any] interface {
+	constraints.Nillable
+	constraints.SSZMarshallable
+	constraints.Empty[T]
 	Len() int
 	Get(index int) BlobSidecarT
+	GetSidecars() []BlobSidecarT
+	ValidateBlockRoots() error
+	VerifyInclusionProofs(kzgOffset uint64) error
 }
 
 // BlockStore is the interface for block storage.
