@@ -55,7 +55,7 @@ type RandaoBackend interface {
 }
 
 type BlobBackend[BeaconBlockHeaderT any] interface {
-	BlobSidecarsAtSlot(slot math.Slot) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
+	BlobSidecarsAtSlot(slot math.Slot, indices []uint64) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
 }
 
 type BlockBackend[BeaconBlockHeaderT any] interface {

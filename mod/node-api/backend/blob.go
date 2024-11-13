@@ -29,16 +29,37 @@ import (
 // BlobSidecarsAtSlot returns the blob sidecars at the given slot.
 func (b Backend[
 	_, _, _, BeaconBlockHeaderT, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-]) BlobSidecarsAtSlot(slot math.Slot) ([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], error) {
+]) BlobSidecarsAtSlot(slot math.Slot, indices []uint64) ([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], error) {
 	blobSidecars, err := b.sb.AvailabilityStore().GetBlobsFromStore(slot)
 	if err != nil {
 		return nil, err
 	}
 
-	// Construct data for beacon API response
-	blobSidecarsResponse := make([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], blobSidecars.Len())
+	// Create a map of requested indices for O(1) lookup if indices are specified
+	indexMap := make(map[uint64]bool)
+	if len(indices) > 0 {
+		for _, idx := range indices {
+			indexMap[idx] = true
+		}
+	}
+
+	// Initialize response slice - if indices specified, size will be len(indices),
+	// otherwise size will be all sidecars
+	responseSize := blobSidecars.Len()
+	if len(indices) > 0 {
+		responseSize = len(indices)
+	}
+	blobSidecarsResponse := make([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], 0, responseSize)
+
+	// Process each sidecar
 	for i := 0; i < blobSidecars.Len(); i++ {
 		blobSidecar := blobSidecars.Get(i)
+
+		// Skip if indices specified and this index not requested
+		if len(indices) > 0 && !indexMap[blobSidecar.GetIndex()] {
+			continue
+		}
+
 		blobHex, err := blobSidecar.GetBlob().MarshalText()
 		if err != nil {
 			return nil, err
@@ -56,7 +77,8 @@ func (b Backend[
 		for j, proof := range inclusionProof {
 			inclusionProofStrings[j] = proof.String()
 		}
-		blobSidecarsResponse[i] = &beacontypes.BlobSidecarData[BeaconBlockHeaderT]{
+
+		blobSidecarsResponse = append(blobSidecarsResponse, &beacontypes.BlobSidecarData[BeaconBlockHeaderT]{
 			Index: blobSidecar.GetIndex(),
 			Blob:  string(blobHex),
 			SignedBlockHeader: &beacontypes.BlockHeader[BeaconBlockHeaderT]{
@@ -66,7 +88,7 @@ func (b Backend[
 			KZGCommitment:               string(kzgCommitmentHex),
 			KZGProof:                    string(kzgProofHex),
 			KZGCommitmentInclusionProof: inclusionProofStrings,
-		}
+		})
 	}
 
 	return blobSidecarsResponse, nil

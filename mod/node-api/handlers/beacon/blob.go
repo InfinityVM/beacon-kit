@@ -21,6 +21,8 @@
 package beacon
 
 import (
+	"strconv"
+
 	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
 	"github.com/berachain/beacon-kit/mod/node-api/handlers/utils"
 )
@@ -28,19 +30,32 @@ import (
 func (h *Handler[
 	BeaconBlockHeaderT, ContextT, _, _,
 ]) GetBlobSidecars(c ContextT) (any, error) {
+	h.Logger().Info("NARULA got request")
 	req, err := utils.BindAndValidate[beacontypes.GetBlobSidecarsRequest](
 		c, h.Logger(),
 	)
 	if err != nil {
+		h.Logger().Error("NARULA failed to bind and validate request", "error", err)
 		return nil, err
 	}
+
+	h.Logger().Info("NARULA got request", "indices", req.Indices)
 
 	slot, err := utils.SlotFromBlockID(req.BlockID, h.backend)
 	if err != nil {
 		return nil, err
 	}
 
-	blobSidecars, err := h.backend.BlobSidecarsAtSlot(slot)
+	// convert indices to uint64
+	indices := make([]uint64, len(req.Indices))
+	for i, idx := range req.Indices {
+		indices[i], err = strconv.ParseUint(idx, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	blobSidecars, err := h.backend.BlobSidecarsAtSlot(slot, indices)
 	if err != nil {
 		return nil, err
 	}
