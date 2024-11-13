@@ -22,6 +22,7 @@ package store
 
 import (
 	"context"
+	"sync"
 
 	"github.com/berachain/beacon-kit/mod/da/pkg/types"
 	"github.com/berachain/beacon-kit/mod/log"
@@ -92,27 +93,49 @@ func (s *Store[BeaconBlockT]) Persist(
 		return nil
 	}
 
+	// Create error channel and wait group for parallel processing
+	errChan := make(chan error, len(sidecars.Sidecars))
+	var wg sync.WaitGroup
+
 	// Create a list of commitments for this slot
 	commitments := make([][]byte, len(sidecars.Sidecars))
 
-	// Store each sidecar sequentially and collect commitments
+	// Process and store sidecars in parallel, and collect commitments
 	for i, sidecar := range sidecars.Sidecars {
 		if sidecar == nil {
 			return ErrAttemptedToStoreNilSidecar
 		}
 
-		bz, err := sidecar.MarshalSSZ()
+		wg.Add(1)
+		go func(index int, sc *types.BlobSidecar) {
+			defer wg.Done()
+
+			bz, err := sc.MarshalSSZ()
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			// Store the sidecar
+			if err := s.Set(slot.Unwrap(), sc.KzgCommitment[:], bz); err != nil {
+				errChan <- err
+				return
+			}
+
+			// Store the commitment for the slot index
+			commitments[index] = sc.KzgCommitment[:]
+		}(i, sidecar)
+	}
+
+	// Wait for all goroutines to complete
+	wg.Wait()
+	close(errChan)
+
+	// Check for any errors
+	for err := range errChan {
 		if err != nil {
 			return err
 		}
-
-		// Store the sidecar
-		if err := s.Set(slot.Unwrap(), sidecar.KzgCommitment[:], bz); err != nil {
-			return err
-		}
-
-		// Store the commitment for the slot index
-		commitments[i] = sidecar.KzgCommitment[:]
 	}
 
 	// Serialization: first byte is number of commitments, followed by concatenated commitments.
@@ -156,24 +179,47 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 		commitments[i] = serializedCommitments[start:end]
 	}
 
+	// Create error channel and wait group for parallel processing
+	errChan := make(chan error, len(commitments))
+	var wg sync.WaitGroup
+
 	// Create slice to hold all sidecars
 	sidecars := make([]*types.BlobSidecar, len(commitments))
 
-	// Retrieve and unmarshal each sidecar sequentially
+	// Retrieve and unmarshal sidecars in parallel
 	for i, commitment := range commitments {
-		// Get the sidecar bytes from the db
-		bz, err := s.Get(slot.Unwrap(), commitment)
+		wg.Add(1)
+		go func(index int, comm []byte) {
+			defer wg.Done()
+
+			// Get the sidecar bytes from the db
+			bz, err := s.Get(slot.Unwrap(), comm)
+			if err != nil {
+				errChan <- err
+				return
+			}
+
+			// Unmarshal the sidecar
+			sidecar := new(types.BlobSidecar)
+			if err := sidecar.UnmarshalSSZ(bz); err != nil {
+				errChan <- err
+				return
+			}
+
+			// Safely store the sidecar in the slice
+			sidecars[index] = sidecar
+		}(i, commitment)
+	}
+
+	// Wait for all goroutines to complete
+	wg.Wait()
+	close(errChan)
+
+	// Check for any errors
+	for err := range errChan {
 		if err != nil {
 			return nil, err
 		}
-
-		// Unmarshal the sidecar
-		sidecar := new(types.BlobSidecar)
-		if err := sidecar.UnmarshalSSZ(bz); err != nil {
-			return nil, err
-		}
-
-		sidecars[i] = sidecar
 	}
 
 	return &types.BlobSidecars{Sidecars: sidecars}, nil
