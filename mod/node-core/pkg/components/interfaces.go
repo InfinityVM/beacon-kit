@@ -244,7 +244,7 @@ type (
 		GetInclusionProof() []common.Root
 	}
 
-	// BlobSidecars is the interface for blobs sidecars.
+	// BlobSidecars is the interface for blob sidecars.
 	BlobSidecars[T, BlobSidecarT any] interface {
 		constraints.Nillable
 		constraints.SSZMarshallable

@@ -171,8 +171,3 @@ type HeadersRequest struct {
 	SlotRequest
 	ParentRoot string `query:"parent_root" validate:"hex"`
 }
-
-type BlobSidecarRequest struct {
-	types.BlockIDRequest
-	Indices []string `query:"indices" validate:"dive,uint64"`
-}

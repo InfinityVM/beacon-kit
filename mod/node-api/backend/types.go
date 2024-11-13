@@ -89,7 +89,7 @@ type BlobSidecar[BeaconBlockHeaderT any] interface {
 	GetInclusionProof() []common.Root
 }
 
-// BlobSidecars is the interface for blobs sidecars.
+// BlobSidecars is the interface for blob sidecars.
 type BlobSidecars[T, BlobSidecarT any] interface {
 	constraints.Nillable
 	constraints.SSZMarshallable

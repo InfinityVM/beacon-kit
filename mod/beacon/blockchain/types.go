@@ -72,7 +72,7 @@ type BeaconBlockHeader interface {
 	GetStateRoot() common.Root
 }
 
-// BlobSidecars is the interface for blobs sidecars.
+// BlobSidecars is the interface for blob sidecars.
 type BlobSidecars interface {
 	constraints.SSZMarshallable
 	constraints.Nillable
