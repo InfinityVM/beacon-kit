@@ -122,9 +122,9 @@ func (s *Store[BeaconBlockT]) Persist(
 				return
 			}
 
-			// Store the commitment for the slot index. This is
-			// concurrent-safe since every goroutine writes to a
-			// different index in the commitments slice.
+			// Store the commitment for the slot index. This is thread-safe
+			// since every goroutine writes to a different index in the
+			// commitments slice.
 			commitments[index] = sc.KzgCommitment[:]
 		}(i, sidecar)
 	}
@@ -208,9 +208,9 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 				return
 			}
 
-			// Safely store the sidecar in the slice. This is
-			// concurrent-safe since every goroutine writes to a
-			// different index in the sidecars slice.
+			// Safely store the sidecar in the slice. This is thread-safe
+			// since every goroutine writes to a different index in the
+			// sidecars slice.
 			sidecars[index] = sidecar
 		}(i, commitment)
 	}
