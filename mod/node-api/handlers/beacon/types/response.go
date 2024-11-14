@@ -84,6 +84,7 @@ type BlockRewardsData struct {
 	AttesterSlashings uint64 `json:"attester_slashings,string"`
 }
 
+// Type outlined here: https://www.quicknode.com/docs/ethereum/eth-v1-beacon-blob_sidecars-id
 type BlobSidecarData[BlockHeaderT any] struct {
 	Index                       uint64                     `json:"index,string"`
 	Blob                        string                     `json:"blob"`

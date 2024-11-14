@@ -100,7 +100,10 @@ func (s *Store[BeaconBlockT]) Persist(
 	errChan := make(chan error, len(sidecars.Sidecars))
 	var wg sync.WaitGroup
 
-	// Create a list of commitments for this slot
+	// Create a list of commitments for this slot. We need to store the
+	// commitments for this slot because we key each sidecar by its
+	// commitment in the DB, and so this is necessary to retrieve the
+	// sidecars later in GetBlobsFromStore.
 	commitments := make([][]byte, len(sidecars.Sidecars))
 
 	// Process and store sidecars in parallel, and collect commitments
@@ -147,7 +150,8 @@ func (s *Store[BeaconBlockT]) Persist(
 	// Each commitment is the same size.
 	totalSize := len(commitments) * COMMITMENT_SIZE
 	serializedCommitments := make([]byte, 0, totalSize+1)
-	serializedCommitments = append(serializedCommitments, byte(len(commitments))) // number of commitments
+	// Set the first byte to the number of commitments.
+	serializedCommitments = append(serializedCommitments, byte(len(commitments)))
 	for _, commitment := range commitments {
 		serializedCommitments = append(serializedCommitments, commitment...)
 	}
