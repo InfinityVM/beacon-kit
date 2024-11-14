@@ -30,6 +30,9 @@ import (
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
 )
 
+// COMMITMENT_SIZE is the length of a KZG commitment in bytes.
+const COMMITMENT_SIZE = 48
+
 // Store is the default implementation of the AvailabilityStore.
 type Store[BeaconBlockBodyT BeaconBlockBody] struct {
 	// IndexDB is a basic database interface.
@@ -117,7 +120,7 @@ func (s *Store[BeaconBlockT]) Persist(
 			}
 
 			// Store the sidecar
-			if err := s.Set(slot.Unwrap(), sc.KzgCommitment[:], bz); err != nil {
+			if err := s.IndexDB.Set(slot.Unwrap(), sc.KzgCommitment[:], bz); err != nil {
 				errChan <- err
 				return
 			}
@@ -142,7 +145,7 @@ func (s *Store[BeaconBlockT]) Persist(
 
 	// Serialization: first byte is number of commitments, followed by concatenated commitments.
 	// Each commitment is the same size.
-	totalSize := len(commitments) * len(commitments[0])
+	totalSize := len(commitments) * COMMITMENT_SIZE
 	serializedCommitments := make([]byte, 0, totalSize+1)
 	serializedCommitments = append(serializedCommitments, byte(len(commitments))) // number of commitments
 	for _, commitment := range commitments {
@@ -173,11 +176,10 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 
 	// Deserialize: first byte is count, each commitment is fixed size.
 	numCommitments := int(serializedCommitments[0])
-	commitmentSize := (len(serializedCommitments) - 1) / numCommitments
 	commitments := make([][]byte, numCommitments)
 	for i := 0; i < numCommitments; i++ {
-		start := 1 + (i * commitmentSize)
-		end := start + commitmentSize
+		start := 1 + (i * COMMITMENT_SIZE)
+		end := start + COMMITMENT_SIZE
 		commitments[i] = serializedCommitments[start:end]
 	}
 
@@ -195,7 +197,7 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 			defer wg.Done()
 
 			// Get the sidecar bytes from the db
-			bz, err := s.Get(slot.Unwrap(), comm)
+			bz, err := s.IndexDB.Get(slot.Unwrap(), comm)
 			if err != nil {
 				errChan <- err
 				return
