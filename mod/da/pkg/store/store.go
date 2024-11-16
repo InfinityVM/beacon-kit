@@ -30,9 +30,6 @@ import (
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
 )
 
-// COMMITMENT_SIZE is the length of a KZG commitment in bytes.
-const COMMITMENT_SIZE = 48
-
 // SLOT_COMMITMENTS_KEY is the key used to store the commitments for a slot
 // in the DB. We use this key to avoid conflicts with the slot index.
 const SLOT_COMMITMENTS_KEY = "slot_commitments"
@@ -150,18 +147,17 @@ func (s *Store[BeaconBlockT]) Persist(
 		}
 	}
 
-	// Serialization: first byte is number of commitments, followed by concatenated commitments.
-	// Each commitment is the same size.
-	totalSize := len(commitments) * COMMITMENT_SIZE
-	serializedCommitments := make([]byte, 0, totalSize+1)
-	// Set the first byte to the number of commitments.
-	serializedCommitments = append(serializedCommitments, byte(len(commitments)))
-	for _, commitment := range commitments {
-		serializedCommitments = append(serializedCommitments, commitment...)
+	slotCommitments := &types.SlotCommitments{
+		Commitments: commitments,
+	}
+
+	serializedCommitments, err := slotCommitments.MarshalSSZ()
+	if err != nil {
+		return err
 	}
 
 	// Store the commitments.
-	if err := s.IndexDB.Set(slot.Unwrap(), SLOT_COMMITMENTS_KEY, serializedCommitments); err != nil {
+	if err := s.IndexDB.Set(slot.Unwrap(), []byte(SLOT_COMMITMENTS_KEY), serializedCommitments); err != nil {
 		return err
 	}
 
@@ -181,14 +177,11 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
 	}
 
-	// Deserialize: first byte is count, each commitment is fixed size.
-	numCommitments := int(serializedCommitments[0])
-	commitments := make([][]byte, numCommitments)
-	for i := 0; i < numCommitments; i++ {
-		start := 1 + (i * COMMITMENT_SIZE)
-		end := start + COMMITMENT_SIZE
-		commitments[i] = serializedCommitments[start:end]
+	slotCommitments := &types.SlotCommitments{}
+	if err := slotCommitments.UnmarshalSSZ(serializedCommitments); err != nil {
+		return nil, err
 	}
+	commitments := slotCommitments.Commitments
 
 	// Create error channel and wait group for parallel processing
 	errChan := make(chan error, len(commitments))
