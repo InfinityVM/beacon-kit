@@ -33,6 +33,10 @@ import (
 // COMMITMENT_SIZE is the length of a KZG commitment in bytes.
 const COMMITMENT_SIZE = 48
 
+// SLOT_COMMITMENTS_KEY is the key used to store the commitments for a slot
+// in the DB. We use this key to avoid conflicts with the slot index.
+const SLOT_COMMITMENTS_KEY = "slot_commitments"
+
 // Store is the default implementation of the AvailabilityStore.
 type Store[BeaconBlockBodyT BeaconBlockBody] struct {
 	// IndexDB is a basic database interface.
@@ -156,9 +160,8 @@ func (s *Store[BeaconBlockT]) Persist(
 		serializedCommitments = append(serializedCommitments, commitment...)
 	}
 
-	// Store the commitments. We use `slot_commitments` as the key to avoid
-	// conflicts with the slot index.
-	if err := s.IndexDB.Set(slot.Unwrap(), []byte("slot_commitments"), serializedCommitments); err != nil {
+	// Store the commitments.
+	if err := s.IndexDB.Set(slot.Unwrap(), SLOT_COMMITMENTS_KEY, serializedCommitments); err != nil {
 		return err
 	}
 
@@ -173,7 +176,7 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 	slot math.Slot,
 ) (*types.BlobSidecars, error) {
 	// Get the commitment list for this slot
-	serializedCommitments, err := s.IndexDB.Get(slot.Unwrap(), []byte("slot_commitments"))
+	serializedCommitments, err := s.IndexDB.Get(slot.Unwrap(), []byte(SLOT_COMMITMENTS_KEY))
 	if err != nil {
 		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
 	}
