@@ -30,7 +30,9 @@ const COMMITMENT_SIZE = 48
 // BLOBS_PER_SLOT is the number of blobs that can be included in a slot.
 const BLOBS_PER_SLOT = 6
 
-// SlotCommitments represents a list of blob commitments for a slot
+// SlotCommitments represents a list of blob commitments for a slot.
+// Used to store the blob commitments for a slot in the DB, because
+// we need the commitments to retrieve the blobs from the DB.
 type SlotCommitments struct {
 	Commitments [][]byte
 }
