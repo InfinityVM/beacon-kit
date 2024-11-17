@@ -30,9 +30,9 @@ import (
 	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
 )
 
-// SLOT_COMMITMENTS_KEY is the key used to store the commitments for a slot
+// SlotCommitmentsKey is the key used to store the commitments for a slot
 // in the DB. We use this key to avoid conflicts with the slot index.
-const SLOT_COMMITMENTS_KEY = "slot_commitments"
+const SlotCommitmentsKey = "slot_commitments"
 
 // Store is the default implementation of the AvailabilityStore.
 type Store[BeaconBlockBodyT BeaconBlockBody] struct {
@@ -157,7 +157,7 @@ func (s *Store[BeaconBlockT]) Persist(
 	}
 
 	// Store the commitments.
-	if err := s.IndexDB.Set(slot.Unwrap(), []byte(SLOT_COMMITMENTS_KEY), serializedCommitments); err != nil {
+	if err := s.IndexDB.Set(slot.Unwrap(), []byte(SlotCommitmentsKey), serializedCommitments); err != nil {
 		return err
 	}
 
@@ -172,7 +172,7 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 	slot math.Slot,
 ) (*types.BlobSidecars, error) {
 	// Get the commitment list for this slot
-	serializedCommitments, err := s.IndexDB.Get(slot.Unwrap(), []byte(SLOT_COMMITMENTS_KEY))
+	serializedCommitments, err := s.IndexDB.Get(slot.Unwrap(), []byte(SlotCommitmentsKey))
 	if err != nil {
 		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
 	}

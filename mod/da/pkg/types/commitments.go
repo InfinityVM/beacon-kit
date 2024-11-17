@@ -24,11 +24,14 @@ import (
 	"github.com/karalabe/ssz"
 )
 
-// COMMITMENT_SIZE is the length of a KZG commitment in bytes.
-const COMMITMENT_SIZE = 48
+// CommitmentSize is the length of a KZG commitment in bytes.
+const CommitmentSize = 48
 
-// BLOBS_PER_SLOT is the number of blobs that can be included in a slot.
-const BLOBS_PER_SLOT = 6
+// BlobsPerSlot is the number of blobs that can be included in a slot.
+const BlobsPerSlot = 6
+
+// OffsetSize is the size of the offset field in the SSZ encoding.
+const OffsetSize = 4
 
 // SlotCommitments represents a list of blob commitments for a slot.
 // Used to store the blob commitments for a slot in the DB, because
@@ -39,7 +42,7 @@ type SlotCommitments struct {
 
 // SizeSSZ returns the size of the SSZ encoding
 func (sc *SlotCommitments) SizeSSZ(fixed bool) uint32 {
-	size := uint32(4) // offset
+	size := uint32(OffsetSize)
 	if fixed {
 		return size
 	}
@@ -50,8 +53,8 @@ func (sc *SlotCommitments) SizeSSZ(fixed bool) uint32 {
 
 // DefineSSZ defines the SSZ encoding for SlotCommitments
 func (sc *SlotCommitments) DefineSSZ(codec *ssz.Codec) {
-	ssz.DefineSliceOfDynamicBytesOffset(codec, &sc.Commitments, BLOBS_PER_SLOT, COMMITMENT_SIZE)
-	ssz.DefineSliceOfDynamicBytesContent(codec, &sc.Commitments, BLOBS_PER_SLOT, COMMITMENT_SIZE)
+	ssz.DefineSliceOfDynamicBytesOffset(codec, &sc.Commitments, BlobsPerSlot, CommitmentSize)
+	ssz.DefineSliceOfDynamicBytesContent(codec, &sc.Commitments, BlobsPerSlot, CommitmentSize)
 }
 
 // MarshalSSZ marshals SlotCommitments into SSZ format
