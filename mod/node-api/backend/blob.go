@@ -29,7 +29,10 @@ import (
 // BlobSidecarsAtSlot returns the blob sidecars at the given slot.
 func (b Backend[
 	_, _, _, BeaconBlockHeaderT, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-]) BlobSidecarsAtSlot(slot math.Slot, indices []uint64) ([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], error) {
+]) BlobSidecarsAtSlot(
+	slot math.Slot,
+	indices []uint64,
+) ([]*beacontypes.BlobSidecarData[BeaconBlockHeaderT], error) {
 	blobSidecars, err := b.sb.AvailabilityStore().GetBlobsFromStore(slot)
 	if err != nil {
 		return nil, err

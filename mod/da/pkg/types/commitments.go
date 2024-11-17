@@ -53,8 +53,18 @@ func (sc *SlotCommitments) SizeSSZ(fixed bool) uint32 {
 
 // DefineSSZ defines the SSZ encoding for SlotCommitments
 func (sc *SlotCommitments) DefineSSZ(codec *ssz.Codec) {
-	ssz.DefineSliceOfDynamicBytesOffset(codec, &sc.Commitments, BlobsPerSlot, CommitmentSize)
-	ssz.DefineSliceOfDynamicBytesContent(codec, &sc.Commitments, BlobsPerSlot, CommitmentSize)
+	ssz.DefineSliceOfDynamicBytesOffset(
+		codec,
+		&sc.Commitments,
+		BlobsPerSlot,
+		CommitmentSize,
+	)
+	ssz.DefineSliceOfDynamicBytesContent(
+		codec,
+		&sc.Commitments,
+		BlobsPerSlot,
+		CommitmentSize,
+	)
 }
 
 // MarshalSSZ marshals SlotCommitments into SSZ format

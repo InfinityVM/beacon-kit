@@ -124,7 +124,7 @@ func (s *Store[BeaconBlockT]) Persist(
 			}
 
 			// Store the sidecar
-			if err := s.IndexDB.Set(slot.Unwrap(), sc.KzgCommitment[:], bz); err != nil {
+			if err = s.IndexDB.Set(slot.Unwrap(), sc.KzgCommitment[:], bz); err != nil {
 				errChan <- err
 				return
 			}
@@ -172,13 +172,16 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 	slot math.Slot,
 ) (*types.BlobSidecars, error) {
 	// Get the commitment list for this slot
-	serializedCommitments, err := s.IndexDB.Get(slot.Unwrap(), []byte(SlotCommitmentsKey))
+	serializedCommitments, err := s.IndexDB.Get(
+		slot.Unwrap(),
+		[]byte(SlotCommitmentsKey),
+	)
 	if err != nil {
 		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
 	}
 
 	slotCommitments := &types.SlotCommitments{}
-	if err := slotCommitments.UnmarshalSSZ(serializedCommitments); err != nil {
+	if err = slotCommitments.UnmarshalSSZ(serializedCommitments); err != nil {
 		return nil, err
 	}
 	commitments := slotCommitments.Commitments
@@ -205,7 +208,7 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 
 			// Unmarshal the sidecar
 			sidecar := new(types.BlobSidecar)
-			if err := sidecar.UnmarshalSSZ(bz); err != nil {
+			if err = sidecar.UnmarshalSSZ(bz); err != nil {
 				errChan <- err
 				return
 			}
