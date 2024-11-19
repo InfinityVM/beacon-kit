@@ -18,21 +18,45 @@
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, AND
 // TITLE.
 
-package backend
+package beacon
 
 import (
-	"github.com/berachain/beacon-kit/mod/primitives/pkg/common"
-	"github.com/berachain/beacon-kit/mod/primitives/pkg/math"
+	"strconv"
+
+	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
+	"github.com/berachain/beacon-kit/mod/node-api/handlers/utils"
 )
 
-// GetGenesis returns the genesis state of the beacon chain.
-func (b Backend[
-	_, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
-]) GenesisValidatorsRoot(slot math.Slot) (common.Root, error) {
-	// needs genesis_time and gensis_fork_version
-	st, _, err := b.stateFromSlot(slot)
+func (h *Handler[
+	BeaconBlockHeaderT, ContextT, _, _,
+]) GetBlobSidecars(c ContextT) (any, error) {
+	req, err := utils.BindAndValidate[beacontypes.GetBlobSidecarsRequest](
+		c, h.Logger(),
+	)
 	if err != nil {
-		return common.Root{}, err
+		return nil, err
 	}
-	return st.GetGenesisValidatorsRoot()
+
+	slot, err := utils.SlotFromBlockID(req.BlockID, h.backend)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert indices to uint64
+	indices := make([]uint64, len(req.Indices))
+	for i, idx := range req.Indices {
+		indices[i], err = strconv.ParseUint(idx, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	blobSidecars, err := h.backend.BlobSidecarsAtSlot(slot, indices)
+	if err != nil {
+		return nil, err
+	}
+
+	return beacontypes.BlobSidecarsResponse[BeaconBlockHeaderT]{
+		Data: blobSidecars,
+	}, nil
 }
