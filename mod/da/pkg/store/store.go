@@ -148,7 +148,7 @@ func (s *Store[BeaconBlockT]) Persist(
 	}
 
 	slotCommitments := &types.SlotCommitments{
-		BlobsPerBlock: uint64(s.chainSpec.MaxBlobsPerBlock()),
+		BlobsPerBlock: s.chainSpec.MaxBlobsPerBlock(),
 		Commitments:   commitments,
 	}
 
