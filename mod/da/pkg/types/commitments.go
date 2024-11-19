@@ -27,8 +27,8 @@ import (
 // CommitmentSize is the length of a KZG commitment in bytes.
 const CommitmentSize = 48
 
-// BlobsPerSlot is the number of blobs that can be included in a slot.
-const BlobsPerSlot = 6
+// Uint64Size is the size of a uint64 in bytes.
+const Uint64Size = 8
 
 // OffsetSize is the size of the offset field in the SSZ encoding.
 const OffsetSize = 4
@@ -37,12 +37,13 @@ const OffsetSize = 4
 // Used to store the blob commitments for a slot in the DB, because
 // we need the commitments to retrieve the blobs from the DB.
 type SlotCommitments struct {
-	Commitments [][]byte
+	BlobsPerBlock uint64
+	Commitments   [][]byte
 }
 
 // SizeSSZ returns the size of the SSZ encoding
 func (sc *SlotCommitments) SizeSSZ(fixed bool) uint32 {
-	size := uint32(OffsetSize)
+	size := uint32(Uint64Size) + uint32(OffsetSize)
 	if fixed {
 		return size
 	}
@@ -53,16 +54,17 @@ func (sc *SlotCommitments) SizeSSZ(fixed bool) uint32 {
 
 // DefineSSZ defines the SSZ encoding for SlotCommitments
 func (sc *SlotCommitments) DefineSSZ(codec *ssz.Codec) {
+	ssz.DefineUint64(codec, &sc.BlobsPerBlock)
 	ssz.DefineSliceOfDynamicBytesOffset(
 		codec,
 		&sc.Commitments,
-		BlobsPerSlot,
+		sc.BlobsPerBlock,
 		CommitmentSize,
 	)
 	ssz.DefineSliceOfDynamicBytesContent(
 		codec,
 		&sc.Commitments,
-		BlobsPerSlot,
+		sc.BlobsPerBlock,
 		CommitmentSize,
 	)
 }
