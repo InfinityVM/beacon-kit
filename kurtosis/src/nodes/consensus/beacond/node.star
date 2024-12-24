@@ -39,8 +39,7 @@ def start(persistent_peers, is_seed, validator_index, config_settings, app_setti
     --beacon-kit.kzg.implementation={} \
     --beacon-kit.engine.rpc-dial-url {} \
     --beacon-kit.block-store-service.enabled \
-    --beacon-kit.node-api.enabled --beacon-kit.node-api.logging \
-    # --beacon-kit.logger.log-level debug \
+    --beacon-kit.node-api.enabled --beacon-kit.node-api.logging --beacon-kit.node-api.address 0.0.0.0:3500 \
     --pruning=nothing \
     {} {}".format(kzg_impl, "$BEACOND_ENGINE_DIAL_URL", seed_option, persistent_peers_option)
 
@@ -59,4 +58,6 @@ def get_genesis_env_vars(cl_service_name):
         "BEACOND_ENABLE_PROMETHEUS": "true",
         "BEACOND_CONSENSUS_KEY_ALGO": "bls12_381",
         "ETH_GENESIS": "/root/eth_genesis/genesis.json",
+        "WITHDRAWAL_ADDRESS": "0x20f33ce90a13a4b5e7697e3544c3083b8f8a51d4",
+        "DEPOSIT_AMOUNT": "32000000000",
     }
