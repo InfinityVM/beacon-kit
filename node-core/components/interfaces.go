@@ -62,9 +62,9 @@ type (
 		IsDataAvailable(context.Context, math.Slot, *ctypes.BeaconBlockBody) bool
 		// Persist makes sure that the sidecar remains accessible for data
 		// availability checks throughout the beacon node's operation.
-		Persist(math.Slot, BlobSidecarsT) error
+		Persist(math.Slot, datypes.BlobSidecars) error
 		// GetBlobsFromStore returns all blob sidecars for a given slot.
-		GetBlobsFromStore(math.Slot) (BlobSidecarsT, error)
+		GetBlobsFromStore(math.Slot) (datypes.BlobSidecars, error)
 	}
 
 	ConsensusBlock interface {
@@ -202,8 +202,29 @@ type (
 		) error
 	}
 
+	// BlobSidecar is the interface for a single blob sidecar.
+	BlobSidecar interface {
+		GetIndex() uint64
+		GetBeaconBlockHeader() *ctypes.BeaconBlockHeader
+		GetBlob() eip4844.Blob
+		GetKzgProof() eip4844.KZGProof
+		GetKzgCommitment() eip4844.KZGCommitment
+		GetInclusionProof() []common.Root
+	}
+
+	// BlobSidecars is the interface for blob sidecars.
+	BlobSidecars[T, BlobSidecarT any] interface {
+		constraints.Nillable
+		constraints.SSZMarshallable
+		constraints.Empty[T]
+		Len() int
+		Get(index int) BlobSidecarT
+		GetSidecars() []BlobSidecarT
+		ValidateBlockRoots() error
+		VerifyInclusionProofs(kzgOffset uint64) error
+	}
+
 	ConsensusSidecars interface {
-		GetSidecar() datypes.BlobSidecar
 		GetSidecars() datypes.BlobSidecars
 		GetHeader() *ctypes.BeaconBlockHeader
 	}
@@ -850,7 +871,7 @@ type (
 	}
 
 	BlobBackend interface {
-		BlobSidecarsAtSlot(slot math.Slot, indices []uint64) ([]*types.BlobSidecarData[BeaconBlockHeaderT], error)
+		BlobSidecarsAtSlot(slot math.Slot, indices []uint64) ([]*types.BlobSidecarData, error)
 	}
 	BlockBackend interface {
 		BlockRootAtSlot(slot math.Slot) (common.Root, error)

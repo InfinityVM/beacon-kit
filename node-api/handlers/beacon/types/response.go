@@ -86,15 +86,15 @@ type BlockRewardsData struct {
 }
 
 // Beacon API spec: https://ethereum.github.io/beacon-APIs/#/Beacon/getBlobSidecars
-type BlobSidecarData[BlockHeaderT any] struct {
-	Index                       uint64                     `json:"index,string"`
-	Blob                        string                     `json:"blob"`
-	KZGCommitment               string                     `json:"kzg_commitment"`
-	KZGProof                    string                     `json:"kzg_proof"`
-	SignedBlockHeader           *BlockHeader[BlockHeaderT] `json:"signed_block_header"`
-	KZGCommitmentInclusionProof []string                   `json:"kzg_commitment_inclusion_proof"`
+type BlobSidecarData struct {
+	Index                       uint64       `json:"index,string"`
+	Blob                        string       `json:"blob"`
+	KZGCommitment               string       `json:"kzg_commitment"`
+	KZGProof                    string       `json:"kzg_proof"`
+	SignedBlockHeader           *BlockHeader `json:"signed_block_header"`
+	KZGCommitmentInclusionProof []string     `json:"kzg_commitment_inclusion_proof"`
 }
 
-type BlobSidecarsResponse[BlockHeaderT any] struct {
-	Data []*BlobSidecarData[BlockHeaderT] `json:"data"`
+type BlobSidecarsResponse struct {
+	Data []*BlobSidecarData `json:"data"`
 }

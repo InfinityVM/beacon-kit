@@ -44,13 +44,13 @@ type AvailabilityStore interface {
 	// availability checks throughout the beacon node's operation.
 	Persist(math.Slot, datypes.BlobSidecars) error
 	// GetBlobsFromStore returns all blob sidecars for a given slot.
-	GetBlobsFromStore(math.Slot) (BlobSidecarsT, error)
+	GetBlobsFromStore(math.Slot) (datypes.BlobSidecars, error)
 }
 
 // BlobSidecar is the interface for a single blob sidecar.
-type BlobSidecar[BeaconBlockHeaderT any] interface {
+type BlobSidecar interface {
 	GetIndex() uint64
-	GetBeaconBlockHeader() BeaconBlockHeaderT
+	GetBeaconBlockHeader() *ctypes.BeaconBlockHeader
 	GetBlob() eip4844.Blob
 	GetKzgProof() eip4844.KZGProof
 	GetKzgCommitment() eip4844.KZGCommitment

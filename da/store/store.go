@@ -122,16 +122,16 @@ func (s *Store) Persist(
 }
 
 // GetBlobsFromStore returns all blob sidecars for a given slot.
-func (s *Store[BeaconBlockT]) GetBlobsFromStore(
+func (s *Store) GetBlobsFromStore(
 	slot math.Slot,
-) (*types.BlobSidecars, error) {
+) (types.BlobSidecars, error) {
 	// Get the commitment list for this slot
 	serializedCommitments, err := s.IndexDB.Get(
 		slot.Unwrap(),
 		[]byte(SlotCommitmentsKey),
 	)
 	if err != nil {
-		return &types.BlobSidecars{Sidecars: make([]*types.BlobSidecar, 0)}, nil // Return empty if not found
+		return types.BlobSidecars{}, nil // Return empty if not found
 	}
 
 	slotCommitments := &types.SlotCommitments{}
@@ -145,7 +145,7 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 	var wg sync.WaitGroup
 
 	// Create slice to hold all sidecars
-	sidecars := make([]*types.BlobSidecar, len(commitments))
+	sidecars := make(types.BlobSidecars, len(commitments))
 
 	// Retrieve and unmarshal sidecars in parallel
 	for i, commitment := range commitments {
@@ -185,5 +185,5 @@ func (s *Store[BeaconBlockT]) GetBlobsFromStore(
 		}
 	}
 
-	return &types.BlobSidecars{Sidecars: sidecars}, nil
+	return sidecars, nil
 }

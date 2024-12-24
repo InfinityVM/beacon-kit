@@ -23,13 +23,11 @@ package beacon
 import (
 	"strconv"
 
-	beacontypes "github.com/berachain/beacon-kit/mod/node-api/handlers/beacon/types"
-	"github.com/berachain/beacon-kit/mod/node-api/handlers/utils"
+	beacontypes "github.com/berachain/beacon-kit/node-api/handlers/beacon/types"
+	"github.com/berachain/beacon-kit/node-api/handlers/utils"
 )
 
-func (h *Handler[
-	BeaconBlockHeaderT, ContextT, _, _,
-]) GetBlobSidecars(c ContextT) (any, error) {
+func (h *Handler[ContextT]) GetBlobSidecars(c ContextT) (any, error) {
 	req, err := utils.BindAndValidate[beacontypes.GetBlobSidecarsRequest](
 		c, h.Logger(),
 	)
@@ -56,7 +54,7 @@ func (h *Handler[
 		return nil, err
 	}
 
-	return beacontypes.BlobSidecarsResponse[BeaconBlockHeaderT]{
+	return beacontypes.BlobSidecarsResponse{
 		Data: blobSidecars,
 	}, nil
 }

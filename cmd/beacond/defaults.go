@@ -98,6 +98,7 @@ func DefaultComponents() []any {
 		components.ProvideNodeAPIEngine,
 		components.ProvideNodeAPIBackend[
 			*AvailabilityStore,
+			*BlobSidecar,
 			*BlockStore, *DepositStore,
 			*KVStore, *CometBFTService, *StorageBackend,
 		],

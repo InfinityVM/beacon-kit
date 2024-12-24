@@ -177,6 +177,7 @@ type (
 	// NodeAPIBackend is a type alias for the node API backend.
 	NodeAPIBackend = backend.Backend[
 		*AvailabilityStore,
+		*BlobSidecar,
 		*BlockStore,
 		sdk.Context,
 		*DepositStore,
