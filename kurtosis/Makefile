@@ -17,7 +17,8 @@ install-kurtosis:
 			if [ "$$ARCH" = "x86_64" ]; then ARCH="amd64"; \
 			elif [ "$$ARCH" = "arm64" ]; then ARCH="arm64"; \
 			else echo "Unsupported architecture $$ARCH for Kurtosis installation" && exit 1; fi; \
-			curl -Lo kurtosis.tar.gz "https://github.com/kurtosis-tech/kurtosis-cli/releases/latest/download/kurtosis-$$OS-$$ARCH.tar.gz"; \
+			TAG=`curl -s "https://api.github.com/repos/kurtosis-tech/kurtosis-cli-release-artifacts/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/'`; \
+			curl -Lo kurtosis.tar.gz "https://github.com/kurtosis-tech/kurtosis-cli-release-artifacts/releases/download/$TAG/kurtosis-cli_${TAG}_${OS}_${ARCH}.tar.gz"; \
 			tar -xzf kurtosis.tar.gz; \
 			rm kurtosis.tar.gz; \
 			chmod +x kurtosis; \
@@ -39,7 +40,7 @@ start-devnet-no-build:
 		--enclave my-local-devnet --parallelism 200
 
 # Starts a Kurtosis enclave containing a local devnet on GCP.
-# --production flag is used to indicate that the enclave is 
+# --production flag is used to indicate that the enclave is
 # running in production mode to allow pod restarts when doing chaos testing.
 start-gcp-devnet-no-build:
 	kurtosis run ./kurtosis --args-file ./kurtosis/beaconkit-base-gcp.yaml \
@@ -47,16 +48,16 @@ start-gcp-devnet-no-build:
 
 # Stops the running Kurtosis enclave on GCP
 stop-gcp-devnet:
-	kurtosis enclave stop my-gcp-devnet
+	kurtosis enclave stop my-gcp-devnet2
 
 # Stops and removes the specified Kurtosis enclave
 reset-gcp-devnet:
 	$(MAKE) stop-gcp-devnet
-	kurtosis enclave rm my-gcp-devnet
+	kurtosis enclave rm my-gcp-devnet2
 
 # Removes the specified Kurtosis enclave
 rm-gcp-devnet:
-	kurtosis enclave rm my-gcp-devnet --force
+	kurtosis enclave rm my-gcp-devnet2 --force
 
 # Stops the running Kurtosis enclave
 stop-devnet:
@@ -65,7 +66,7 @@ stop-devnet:
 # Stops and removes the specified Kurtosis enclave
 reset-devnet:
 	$(MAKE) stop-devnet
-	kurtosis enclave rm my-local-devnet 
+	kurtosis enclave rm my-local-devnet
 
 # Removes the specified Kurtosis enclave
 rm-devnet:
